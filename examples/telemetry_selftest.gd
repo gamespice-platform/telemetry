@@ -4,8 +4,8 @@ extends Node
 ## Counts sections run to their last line as well as checks, because a script error
 ## aborts a section and not the run.
 
-const EXPECTED_SECTIONS := 6
-const EXPECTED_CHECKS := 53
+const EXPECTED_SECTIONS := 7
+const EXPECTED_CHECKS := 65
 
 var _passed := 0
 var _failed := 0
@@ -19,6 +19,7 @@ func _ready() -> void:
 	_queue()
 	_rollup()
 	_node()
+	_resilience()
 	_layers()
 	print("")
 	_check(_sections == EXPECTED_SECTIONS, "every section ran to its last line (%d of %d)" % [_sections, EXPECTED_SECTIONS])
@@ -167,6 +168,44 @@ func _layers() -> void:
 	_check(r.ok and r.value is DotTelemetryConfig, "from_files returns a config")
 	_check((r.value as DotTelemetryConfig).describe().begins_with("telemetry off"), "describe says what it is, and that it is off")
 	_check(c.env_prefix() == "DOT_TELEMETRY_" and c.cli_prefix() == "--telemetry-", "env and command-line prefixes")
+	_sections += 1
+
+
+func _resilience() -> void:
+	var q := DotTelemetryQueue.new(3)
+	for i in 5:
+		q.push(i)
+	_check(q.size() == 3 and q.dropped == 2 and q.to_array() == [2, 3, 4], "a full queue drops the oldest through the head index")
+	_check(q.take(2) == [2, 3] and q.size() == 1, "take after a drop")
+	q.requeue([8, 9])
+	_check(q.to_array() == [8, 9, 4] and q.dropped == 2, "requeue keeps order within the bound")
+	q.requeue([1, 2])
+	_check(q.to_array() == [1, 2, 8] and q.dropped == 4, "requeue over the bound drops the newest")
+	var r := DotTelemetryQueue.new(2)
+	r.load_array([1, 2, 3, 4])
+	_check(r.to_array() == [3, 4] and r.dropped == 2, "load_array honours the bound and counts")
+	var big := DotTelemetryQueue.new(0)
+	for i in 10000:
+		big.push(i)
+	_check(big.take(0).size() == 10000 and big.size() == 0, "capacity 0 is unlimited")
+	var t := DotTelemetry.new()
+	t.config.flush_seconds = 10
+	t.config.max_backoff_seconds = 60
+	_check(t.next_flush_seconds() == 10.0, "no failures, normal interval")
+	t.shipped(false, [])
+	t.shipped(false, [])
+	_check(t.failures() == 2 and t.next_flush_seconds() == 40.0, "the wait doubles per failure")
+	for i in 10:
+		t.shipped(false, [])
+	_check(t.next_flush_seconds() == 60.0, "and stops at max_backoff_seconds")
+	t.shipped(true, [])
+	_check(t.failures() == 0 and t.next_flush_seconds() == 10.0, "a success resets it")
+	t.config.max_backoff_seconds = 0
+	t.shipped(false, [])
+	_check(t.next_flush_seconds() == 10.0, "backoff 0 keeps the interval")
+	t.config.max_queue = -1
+	_check(not t.config.validate().ok, "a negative limit is refused")
+	t.free()
 	_sections += 1
 
 

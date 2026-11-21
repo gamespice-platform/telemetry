@@ -4,6 +4,8 @@ Godot 4.7+ addon for opt-in gameplay and performance analytics: named events wit
 
 Telemetry here is a small, honest pipe. You declare every event and field up front, nothing is recorded until telemetry is switched on, a field you did not declare cannot leave the game, and every queue has a bound you can see and change.
 
+Unsent events survive a restart: `queue.to_array()` and `queue.load_array()` hand the waiting events to GameSpice Save or a file. After a failed send the wait before the next automatic flush doubles, up to `max_backoff_seconds` (0 keeps the interval), and a success resets it. The queue drops its oldest event by moving a head index, so a full queue costs no more per event than an empty one. The node also flushes when the game closes or is paused (`flush_on_exit`).
+
 ## Install
 
 1. Copy `addons/dot_telemetry/` and `addons/dot_core/` into your project.

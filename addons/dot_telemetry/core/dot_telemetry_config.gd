@@ -18,6 +18,11 @@ const ADDON := "dot-telemetry"
 ## Events kept while waiting to ship; 0 is unlimited. When full the oldest is dropped and counted.
 @export_range(0, 1000000, 1) var max_queue: int = 5000
 
+## After a failed send the wait doubles, up to this many seconds; 0 keeps the normal interval.
+@export_range(0, 86400, 1) var max_backoff_seconds: int = 600
+## Flush the queue when the game closes or is paused (a phone, a hidden browser tab).
+@export var flush_on_exit: bool = true
+
 @export_group("Sampling")
 ## Share of sessions that report, 0 to 1, decided once per session from its id.
 @export_range(0.0, 1.0, 0.01) var sample_rate: float = 1.0
@@ -38,6 +43,8 @@ func cli_prefix() -> String:
 func validate() -> DotResult:
 	if sample_rate < 0.0 or sample_rate > 1.0:
 		return DotResult.fail(DotError.CODE_INVALID, "telemetry sample_rate %s is outside 0 to 1" % sample_rate)
+	if max_backoff_seconds < 0 or batch_size < 0 or max_queue < 0 or max_string < 0:
+		return DotResult.fail(DotError.CODE_INVALID, "telemetry limits cannot be negative (0 is unlimited)")
 	if endpoint != "" and not (endpoint.begins_with("https://") or endpoint.begins_with("http://localhost")):
 		return DotResult.fail(DotError.CODE_INVALID, "telemetry endpoint '%s' must be https (or http on localhost)" % endpoint)
 	return DotResult.success(self)

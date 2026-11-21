@@ -14,6 +14,7 @@ var session_id: String = ""
 
 var _sampled := true
 var _since_flush := 0.0
+var _failures := 0
 
 
 func _ready() -> void:
@@ -74,14 +75,34 @@ func flush() -> Array:
 
 ## The game's client reports how a batch went; a failed one goes back to the front of the queue.
 func shipped(ok: bool, batch: Array) -> void:
-	if not ok:
-		queue.requeue(batch)
+	if ok:
+		_failures = 0
+		return
+	_failures += 1
+	queue.requeue(batch)
+
+
+## Seconds until the next automatic flush: the interval, doubled per failed send in a row up to [member DotTelemetryConfig.max_backoff_seconds].
+func next_flush_seconds() -> float:
+	var base := float(config.flush_seconds)
+	if _failures == 0 or config.max_backoff_seconds <= 0:
+		return base
+	return minf(base * pow(2.0, mini(_failures, 20)), maxf(base, float(config.max_backoff_seconds)))
+
+
+func failures() -> int:
+	return _failures
+
+
+func _notification(what: int) -> void:
+	if config.flush_on_exit and (what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED):
+		flush()
 
 
 func _process(delta: float) -> void:
 	if not config.enabled:
 		return
 	_since_flush += delta
-	if _since_flush >= float(config.flush_seconds):
+	if _since_flush >= next_flush_seconds():
 		_since_flush = 0.0
 		flush()

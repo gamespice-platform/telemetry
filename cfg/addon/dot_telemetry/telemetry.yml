@@ -2,3 +2,5 @@
 # enabled: false
 # flush_seconds: 30
 # sample_rate: 1.0
+# max_backoff_seconds: 600   # wait doubles after failed sends up to this; 0 keeps the interval
+# flush_on_exit: true
