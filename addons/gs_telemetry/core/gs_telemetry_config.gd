@@ -1,9 +1,9 @@
 class_name GSTelemetryConfig
 extends GSConfig
 
-## Every tunable of telemetry. Layers, weakest first: these defaults, `cfg/addon/dot_telemetry/*.yml`, the game's files, the operator's files, `DOT_TELEMETRY_*` environment variables, then `--telemetry-*` flags. Telemetry is opt-in: `enabled` is false until the player (or the game on the player's behalf) turns it on.
+## Every tunable of telemetry. Layers, weakest first: these defaults, `cfg/addon/gs_telemetry/*.yml`, the game's files, the operator's files, `GS_TELEMETRY_*` environment variables, then `--telemetry-*` flags. Telemetry is opt-in: `enabled` is false until the player (or the game on the player's behalf) turns it on.
 
-const ADDON := "dot-telemetry"
+const ADDON := "gs-telemetry"
 
 ## Master switch and the player's off switch. Off, nothing is recorded and anything unsent is discarded.
 @export var enabled: bool = false
@@ -33,7 +33,7 @@ const ADDON := "dot-telemetry"
 
 
 func env_prefix() -> String:
-	return "DOT_TELEMETRY_"
+	return "GS_TELEMETRY_"
 
 
 func cli_prefix() -> String:
@@ -50,7 +50,7 @@ func validate() -> GSResult:
 	return GSResult.success(self)
 
 
-## Defaults, then `cfg/addon/dot_telemetry/*.yml` and the game tier, then environment and command line.
+## Defaults, then `cfg/addon/gs_telemetry/*.yml` and the game tier, then environment and command line.
 static func from_files() -> GSResult:
 	var cfg := GSTelemetryConfig.new()
 	var files := GSAddonConfig.load_dir(ADDON)

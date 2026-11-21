@@ -1,6 +1,6 @@
 extends Node
 
-## dot-telemetry's headless suite (res://examples/telemetry_selftest.tscn).
+## gs-telemetry's headless suite (res://examples/telemetry_selftest.tscn).
 ## Counts sections run to their last line as well as checks, because a script error
 ## aborts a section and not the run.
 
@@ -13,7 +13,7 @@ var _sections := 0
 
 
 func _ready() -> void:
-	print("dot-telemetry")
+	print("gs-telemetry")
 	_config()
 	_schema()
 	_queue()
@@ -167,7 +167,7 @@ func _layers() -> void:
 	var r := GSTelemetryConfig.from_files()
 	_check(r.ok and r.value is GSTelemetryConfig, "from_files returns a config")
 	_check((r.value as GSTelemetryConfig).describe().begins_with("telemetry off"), "describe says what it is, and that it is off")
-	_check(c.env_prefix() == "DOT_TELEMETRY_" and c.cli_prefix() == "--telemetry-", "env and command-line prefixes")
+	_check(c.env_prefix() == "GS_TELEMETRY_" and c.cli_prefix() == "--telemetry-", "env and command-line prefixes")
 	_sections += 1
 
 

@@ -8,7 +8,7 @@ Unsent events survive a restart: `queue.to_array()` and `queue.load_array()` han
 
 ## Install
 
-1. Copy `addons/dot_telemetry/` and `addons/dot_core/` into your project.
+1. Copy `addons/gs_telemetry/` and `addons/gs_core/` into your project.
 2. Enable GameSpice Telemetry in *Project > Project Settings > Plugins*.
 
 ## Quick start
@@ -48,7 +48,7 @@ Every number is a field on `GSTelemetryConfig`. The values below are defaults, a
 | `max_string` | 256 | Longest string property; 0 is unlimited. A longer one is refused, not cut. |
 | `allow_unknown_events` | false | Record events the schema does not declare, as they are. |
 
-Layers, weakest first: the defaults, `cfg/addon/dot_telemetry/*.yml`, the game's files, the operator's files, `DOT_TELEMETRY_*` environment variables, then `--telemetry-*` flags.
+Layers, weakest first: the defaults, `cfg/addon/gs_telemetry/*.yml`, the game's files, the operator's files, `GS_TELEMETRY_*` environment variables, then `--telemetry-*` flags.
 
 ## What it is not
 
