@@ -6,7 +6,7 @@ Opt-in gameplay and performance telemetry. Read the family [CLAUDE.md](../../CLA
 | --- | --- |
 | `core/dot_telemetry_config.gd` | `DotTelemetryConfig`: every tunable, `from_files()`, `validate()` |
 | `core/dot_telemetry_schema.gd` | `DotTelemetrySchema`: declared events and typed fields; refuses anything else |
-| `core/dot_telemetry_queue.gd` | `DotTelemetryQueue`: bounded batch queue, counts what it drops |
+| `core/dot_telemetry_queue.gd` | `DotTelemetryQueue`: bounded batch queue (a `DotBoundedBuffer`; a requeue over the bound drops the newest), counts what it drops |
 | `core/dot_telemetry_rollup.gd` | `DotTelemetryRollup`: counts, sessions, ordered funnels, errors, crash-free rate |
 | `runtime/dot_telemetry.gd` | `DotTelemetry`: the node; consent gate, sampling, `track`, `flush`, `shipped` |
 | `examples/telemetry_selftest.tscn` | the suite |
