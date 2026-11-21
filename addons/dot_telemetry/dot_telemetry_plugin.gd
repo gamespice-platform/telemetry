@@ -5,8 +5,8 @@ extends EditorPlugin
 
 
 func _enter_tree() -> void:
-	add_custom_type("DotTelemetry", "Node", load("res://addons/dot_telemetry/runtime/dot_telemetry.gd"), null)
+	add_custom_type("GSTelemetry", "Node", load("res://addons/dot_telemetry/runtime/dot_telemetry.gd"), null)
 
 
 func _exit_tree() -> void:
-	remove_custom_type("DotTelemetry")
+	remove_custom_type("GSTelemetry")

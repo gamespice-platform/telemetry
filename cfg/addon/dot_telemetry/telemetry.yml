@@ -1,4 +1,4 @@
-# Shipped defaults are in DotTelemetryConfig; a key here overrides one.
+# Shipped defaults are in GSTelemetryConfig; a key here overrides one.
 # enabled: false
 # flush_seconds: 30
 # sample_rate: 1.0

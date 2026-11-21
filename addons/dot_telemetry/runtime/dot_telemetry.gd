@@ -1,4 +1,4 @@
-class_name DotTelemetry
+class_name GSTelemetry
 extends Node
 
 ## The node a game holds. [method track] checks an event against the schema, drops it if the player has telemetry off or the session is not sampled, then queues it and counts it. A batch leaves through [signal batch_ready]; the game's HTTP client ships it and calls [method shipped].
@@ -6,10 +6,10 @@ extends Node
 ## A batch is ready to send: an Array of {e, t, s, p} dictionaries (event, unix time, session, properties).
 signal batch_ready(batch: Array)
 
-var config: DotTelemetryConfig = DotTelemetryConfig.new()
-var schema := DotTelemetrySchema.new()
-var queue := DotTelemetryQueue.new()
-var rollup := DotTelemetryRollup.new()
+var config: GSTelemetryConfig = GSTelemetryConfig.new()
+var schema := GSTelemetrySchema.new()
+var queue := GSTelemetryQueue.new()
+var rollup := GSTelemetryRollup.new()
 var session_id: String = ""
 
 var _sampled := true
@@ -45,9 +45,9 @@ func set_enabled(on: bool) -> void:
 
 
 ## Record an event. Success carries true when it was queued and false when it was skipped on purpose (off, or the session is not sampled). A schema violation fails with the reason.
-func track(event: StringName, props: Dictionary = {}) -> DotResult:
+func track(event: StringName, props: Dictionary = {}) -> GSResult:
 	if not config.enabled or not _sampled:
-		return DotResult.success(false)
+		return GSResult.success(false)
 	var clean := props
 	if schema.has(event) or not config.allow_unknown_events:
 		var r := schema.validate(event, props, config.max_string)
@@ -56,7 +56,7 @@ func track(event: StringName, props: Dictionary = {}) -> DotResult:
 		clean = r.value as Dictionary
 	queue.push({"e": event, "t": Time.get_unix_time_from_system(), "s": session_id, "p": clean})
 	rollup.record(event, session_id, Time.get_unix_time_from_system())
-	return DotResult.success(true)
+	return GSResult.success(true)
 
 
 func track_error(code: String, fatal: bool = false) -> void:
@@ -82,7 +82,7 @@ func shipped(ok: bool, batch: Array) -> void:
 	queue.requeue(batch)
 
 
-## Seconds until the next automatic flush: the interval, doubled per failed send in a row up to [member DotTelemetryConfig.max_backoff_seconds].
+## Seconds until the next automatic flush: the interval, doubled per failed send in a row up to [member GSTelemetryConfig.max_backoff_seconds].
 func next_flush_seconds() -> float:
 	var base := float(config.flush_seconds)
 	if _failures == 0 or config.max_backoff_seconds <= 0:

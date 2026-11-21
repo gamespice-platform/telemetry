@@ -1,4 +1,4 @@
-class_name DotTelemetryRollup
+class_name GSTelemetryRollup
 extends RefCounted
 
 ## What the numbers add up to, computed locally and cheaply: event counts, sessions, ordered funnels, and error and crash summaries.
@@ -15,12 +15,12 @@ var _errors: Dictionary = {}     # code -> count
 
 
 ## A funnel is an ordered list of events; a session passes step i once it has done steps 0 to i in that order.
-func define_funnel(funnel: StringName, steps: Array) -> DotResult:
+func define_funnel(funnel: StringName, steps: Array) -> GSResult:
 	if steps.size() < 2:
-		return DotResult.fail(DotError.CODE_INVALID, "funnel '%s' needs at least two steps" % funnel)
+		return GSResult.fail(GSError.CODE_INVALID, "funnel '%s' needs at least two steps" % funnel)
 	_funnels[funnel] = steps.duplicate()
 	_progress[funnel] = {}
-	return DotResult.success(funnel)
+	return GSResult.success(funnel)
 
 
 func record(event: StringName, session: String, t: float = 0.0) -> void:

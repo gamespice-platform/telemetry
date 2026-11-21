@@ -29,7 +29,7 @@ func _ready() -> void:
 
 
 func _config() -> void:
-	var c := DotTelemetryConfig.new()
+	var c := GSTelemetryConfig.new()
 	_check(c.validate().ok, "defaults validate")
 	_check(not c.enabled, "telemetry is off until someone turns it on")
 	c.sample_rate = 1.5
@@ -46,7 +46,7 @@ func _config() -> void:
 
 
 func _schema() -> void:
-	var s := DotTelemetrySchema.new()
+	var s := GSTelemetrySchema.new()
 	_check(s.declare(&"level.finish", {"seconds": "float", "deaths": "int", "map": "string", "won": "bool"}).ok, "a declaration with every type")
 	_check(not s.declare(&"Bad Name", {}).ok, "an uppercase event name is refused")
 	_check(not s.declare(&"x", {"a": "vector"}).ok, "an unknown field type is refused")
@@ -77,14 +77,14 @@ func _schema() -> void:
 
 
 func _queue() -> void:
-	var q := DotTelemetryQueue.new(3)
+	var q := GSTelemetryQueue.new(3)
 	for i in 5:
 		q.push(i)
 	_check(q.size() == 3 and q.dropped == 2, "a full queue drops the oldest and counts it", "%d/%d" % [q.size(), q.dropped])
 	_check(q.take(2) == [2, 3] and q.size() == 1, "take pulls from the front")
 	q.requeue([2, 3])
 	_check(q.take(0) == [2, 3, 4], "requeue puts a failed batch back first and take(0) takes all")
-	var u := DotTelemetryQueue.new(0)
+	var u := GSTelemetryQueue.new(0)
 	for i in 1000:
 		u.push(i)
 	_check(u.size() == 1000 and u.dropped == 0, "capacity 0 is unlimited")
@@ -93,7 +93,7 @@ func _queue() -> void:
 
 
 func _rollup() -> void:
-	var r := DotTelemetryRollup.new()
+	var r := GSTelemetryRollup.new()
 	_check(not r.define_funnel(&"f", [&"a"]).ok, "a one-step funnel is refused")
 	_check(r.define_funnel(&"onboarding", [&"start", &"move", &"shoot"]).ok, "a funnel is defined")
 	r.record(&"start", "s1", 0.0)
@@ -114,7 +114,7 @@ func _rollup() -> void:
 	var top := r.top_errors(1)
 	_check(top.size() == 1 and top[0]["code"] == "net.timeout" and top[0]["count"] == 2, "top errors, commonest first")
 	_check(is_equal_approx(r.crash_free_rate(), 2.0 / 3.0), "crash-free rate counts sessions, not errors")
-	var cap := DotTelemetryRollup.new()
+	var cap := GSTelemetryRollup.new()
 	cap.max_sessions = 1
 	cap.record(&"a", "x")
 	cap.record(&"a", "y")
@@ -123,7 +123,7 @@ func _rollup() -> void:
 
 
 func _node() -> void:
-	var t := DotTelemetry.new()
+	var t := GSTelemetry.new()
 	add_child(t)
 	t.schema.declare(&"jump", {"height": "float"})
 	t.start_session("abc")
@@ -149,11 +149,11 @@ func _node() -> void:
 	t.config.sample_rate = 0.0
 	t.start_session("zzz")
 	_check(t.track(&"jump", {"height": 1.0}).value == false, "an unsampled session records nothing")
-	_check(DotTelemetry.sampled("id", 1.0) and not DotTelemetry.sampled("id", 0.0), "sample rate 1 and 0 are always and never")
-	_check(DotTelemetry.sampled("same", 0.5) == DotTelemetry.sampled("same", 0.5), "sampling is stable for an id")
+	_check(GSTelemetry.sampled("id", 1.0) and not GSTelemetry.sampled("id", 0.0), "sample rate 1 and 0 are always and never")
+	_check(GSTelemetry.sampled("same", 0.5) == GSTelemetry.sampled("same", 0.5), "sampling is stable for an id")
 	var yes := 0
 	for i in 2000:
-		if DotTelemetry.sampled("session-%d" % i, 0.25):
+		if GSTelemetry.sampled("session-%d" % i, 0.25):
 			yes += 1
 	_check(yes > 350 and yes < 650, "a 0.25 rate picks about a quarter", str(yes))
 	t.queue_free()
@@ -161,18 +161,18 @@ func _node() -> void:
 
 
 func _layers() -> void:
-	var c := DotTelemetryConfig.new()
+	var c := GSTelemetryConfig.new()
 	var applied := c.apply_dictionary({"flush_seconds": 5, "enabled": true, "max_queue": 0})
 	_check(applied.size() == 3 and c.flush_seconds == 5 and c.enabled and c.max_queue == 0, "a dictionary layer sets every type", str(applied))
-	var r := DotTelemetryConfig.from_files()
-	_check(r.ok and r.value is DotTelemetryConfig, "from_files returns a config")
-	_check((r.value as DotTelemetryConfig).describe().begins_with("telemetry off"), "describe says what it is, and that it is off")
+	var r := GSTelemetryConfig.from_files()
+	_check(r.ok and r.value is GSTelemetryConfig, "from_files returns a config")
+	_check((r.value as GSTelemetryConfig).describe().begins_with("telemetry off"), "describe says what it is, and that it is off")
 	_check(c.env_prefix() == "DOT_TELEMETRY_" and c.cli_prefix() == "--telemetry-", "env and command-line prefixes")
 	_sections += 1
 
 
 func _resilience() -> void:
-	var q := DotTelemetryQueue.new(3)
+	var q := GSTelemetryQueue.new(3)
 	for i in 5:
 		q.push(i)
 	_check(q.size() == 3 and q.dropped == 2 and q.to_array() == [2, 3, 4], "a full queue drops the oldest through the head index")
@@ -181,14 +181,14 @@ func _resilience() -> void:
 	_check(q.to_array() == [8, 9, 4] and q.dropped == 2, "requeue keeps order within the bound")
 	q.requeue([1, 2])
 	_check(q.to_array() == [1, 2, 8] and q.dropped == 4, "requeue over the bound drops the newest")
-	var r := DotTelemetryQueue.new(2)
+	var r := GSTelemetryQueue.new(2)
 	r.load_array([1, 2, 3, 4])
 	_check(r.to_array() == [3, 4] and r.dropped == 2, "load_array honours the bound and counts")
-	var big := DotTelemetryQueue.new(0)
+	var big := GSTelemetryQueue.new(0)
 	for i in 10000:
 		big.push(i)
 	_check(big.take(0).size() == 10000 and big.size() == 0, "capacity 0 is unlimited")
-	var t := DotTelemetry.new()
+	var t := GSTelemetry.new()
 	t.config.flush_seconds = 10
 	t.config.max_backoff_seconds = 60
 	_check(t.next_flush_seconds() == 10.0, "no failures, normal interval")

@@ -1,5 +1,5 @@
-class_name DotTelemetryConfig
-extends DotConfig
+class_name GSTelemetryConfig
+extends GSConfig
 
 ## Every tunable of telemetry. Layers, weakest first: these defaults, `cfg/addon/dot_telemetry/*.yml`, the game's files, the operator's files, `DOT_TELEMETRY_*` environment variables, then `--telemetry-*` flags. Telemetry is opt-in: `enabled` is false until the player (or the game on the player's behalf) turns it on.
 
@@ -40,20 +40,20 @@ func cli_prefix() -> String:
 	return "--telemetry-"
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if sample_rate < 0.0 or sample_rate > 1.0:
-		return DotResult.fail(DotError.CODE_INVALID, "telemetry sample_rate %s is outside 0 to 1" % sample_rate)
+		return GSResult.fail(GSError.CODE_INVALID, "telemetry sample_rate %s is outside 0 to 1" % sample_rate)
 	if max_backoff_seconds < 0 or batch_size < 0 or max_queue < 0 or max_string < 0:
-		return DotResult.fail(DotError.CODE_INVALID, "telemetry limits cannot be negative (0 is unlimited)")
+		return GSResult.fail(GSError.CODE_INVALID, "telemetry limits cannot be negative (0 is unlimited)")
 	if endpoint != "" and not (endpoint.begins_with("https://") or endpoint.begins_with("http://localhost")):
-		return DotResult.fail(DotError.CODE_INVALID, "telemetry endpoint '%s' must be https (or http on localhost)" % endpoint)
-	return DotResult.success(self)
+		return GSResult.fail(GSError.CODE_INVALID, "telemetry endpoint '%s' must be https (or http on localhost)" % endpoint)
+	return GSResult.success(self)
 
 
 ## Defaults, then `cfg/addon/dot_telemetry/*.yml` and the game tier, then environment and command line.
-static func from_files() -> DotResult:
-	var cfg := DotTelemetryConfig.new()
-	var files := DotAddonConfig.load_dir(ADDON)
+static func from_files() -> GSResult:
+	var cfg := GSTelemetryConfig.new()
+	var files := GSAddonConfig.load_dir(ADDON)
 	if not files.ok:
 		return files
 	cfg.apply_dictionary(files.value as Dictionary, "yml")

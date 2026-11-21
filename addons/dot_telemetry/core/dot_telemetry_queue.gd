@@ -1,7 +1,7 @@
-class_name DotTelemetryQueue
-extends DotBoundedBuffer
+class_name GSTelemetryQueue
+extends GSBoundedBuffer
 
-## Events waiting to ship. Bounded on purpose, and loud about it: when it is full the oldest event is dropped and [member dropped] counts it, so a backed-up endpoint costs history and never memory. The storage is the shared [DotBoundedBuffer] (a head index, no front shifts); this class only sets the telemetry rule that a requeued batch over the bound loses its newest events, so the history that already failed to ship is kept.
+## Events waiting to ship. Bounded on purpose, and loud about it: when it is full the oldest event is dropped and [member dropped] counts it, so a backed-up endpoint costs history and never memory. The storage is the shared [GSBoundedBuffer] (a head index, no front shifts); this class only sets the telemetry rule that a requeued batch over the bound loses its newest events, so the history that already failed to ship is kept.
 
 func _init(p_capacity: int = 0) -> void:
 	capacity = maxi(0, p_capacity)

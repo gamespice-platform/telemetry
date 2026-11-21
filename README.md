@@ -14,8 +14,8 @@ Unsent events survive a restart: `queue.to_array()` and `queue.load_array()` han
 ## Quick start
 
 ```gdscript
-var t := DotTelemetry.new()
-t.config = DotTelemetryConfig.from_files().value   # layered cfg, env and flags
+var t := GSTelemetry.new()
+t.config = GSTelemetryConfig.from_files().value   # layered cfg, env and flags
 add_child(t)
 
 t.schema.declare(&"level.finish", {"seconds": "float", "deaths": "int", "map": "string"})
@@ -35,7 +35,7 @@ print(t.rollup.funnel(&"onboarding"), t.rollup.crash_free_rate())
 
 ## Settings
 
-Every number is a field on `DotTelemetryConfig`. The values below are defaults, and the ranges are inspector slider limits, not enforced caps. Set the property from code or a config file to go beyond them.
+Every number is a field on `GSTelemetryConfig`. The values below are defaults, and the ranges are inspector slider limits, not enforced caps. Set the property from code or a config file to go beyond them.
 
 | Setting | Default | What it does |
 | --- | --- | --- |
