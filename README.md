@@ -2,6 +2,8 @@
 
 Godot 4.7+ addon for opt-in gameplay and performance analytics: named events with a declared schema, session and funnel rollups, error and crash summaries, batched shipping to the TMC backbone, and an off switch the player controls. Part of the GameSpice addon family; needs only GameSpice Core.
 
+A GameSpice addon under the MIT licence, built with Claude Code. Its headless test is `examples/telemetry_selftest.tscn`, which runs offline. The games in [Zee's Games](https://zeesgames.com) are built on GameSpice addons and run on live servers; none of them ships this addon yet.
+
 Telemetry here is a small, honest pipe. You declare every event and field up front, nothing is recorded until telemetry is switched on, a field you did not declare cannot leave the game, and every queue has a bound you can see and change.
 
 Unsent events survive a restart: `queue.to_array()` and `queue.load_array()` hand the waiting events to GameSpice Save or a file. After a failed send the wait before the next automatic flush doubles, up to `max_backoff_seconds` (0 keeps the interval), and a success resets it. The queue drops its oldest event by moving a head index, so a full queue costs no more per event than an empty one. The node also flushes when the game closes or is paused (`flush_on_exit`).
@@ -67,9 +69,11 @@ godot --headless --path . res://examples/telemetry_selftest.tscn
 
 The self-test is offline and exits non-zero on any failure.
 
-## Status
+## Used by
 
-Built and maintained with Claude Code. The test suites pass, but little of this has been in front of real players yet. Please report rough edges by opening an issue.
+No shipped game uses it yet; the example scene shows it.
+
+The whole collection is at [zeesgames.com](https://zeesgames.com).
 
 ## Licence
 
